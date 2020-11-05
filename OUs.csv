@@ -1,0 +1,12 @@
+Path;Display Name;Name;Description
+DC=tdc3,DC=local;Mijn school;Mijn school;Mijn school
+OU=Mijn school,DC=tdc3,DC=local;Secretariaat;Secretariaat;Secretariaat
+OU=Mijn school,DC=tdc3,DC=local;Directie;Directie;Directie
+OU=Mijn school,DC=tdc3,DC=local;Leerkrachten;Leerkrachten;Leerkrachten
+OU=Mijn school,DC=tdc3,DC=local;Leerlingen;Leerlingen;Leerlingen
+OU=Leerlingen,OU=Mijn school,DC=tdc3,DC=local;1ste leerjaar;1ste leerjaar;1ste leerjaar
+OU=Leerlingen,OU=Mijn school,DC=tdc3,DC=local;2de leerjaar;2de leerjaar;2de leerjaar
+OU=Leerlingen,OU=Mijn school,DC=tdc3,DC=local;3de leerjaar;3de leerjaar;3de leerjaar
+OU=Leerlingen,OU=Mijn school,DC=tdc3,DC=local;4de leerjaar;4de leerjaar;4de leerjaar
+OU=Leerlingen,OU=Mijn school,DC=tdc3,DC=local;5de leerjaar;5de leerjaar;5de leerjaar
+OU=Leerlingen,OU=Mijn school,DC=tdc3,DC=local;6de leerjaar;6de leerjaar;6de leerjaar

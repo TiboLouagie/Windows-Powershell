@@ -54,7 +54,7 @@ Add-DnsServerPrimaryZone `    -ComputerName DC1 `    -NetworkId "192.168.1.0/2
 #checks for upn's
 Get-ADForest | Format-List UPNSuffixes
 
-
+#Iedere gebruiker dient te kunnen inloggen op het windows domain met zijn emailadres:
 Get-ADForest | Set-ADForest -UPNSuffixes @{add="mijnschool.be"}
 
 
@@ -82,6 +82,8 @@ Get-ADUser -SearchBase $ou -filter * | ForEach-Object {
 $newUpn2 = $_.UserPrincipalName.Replace($oldSuffix2,$newSuffix2)
 $_ | Set-ADUser -UserPrincipalName $newUpn2
 }
+
+
 #endregion
 #======1.7======
 #region Install DHCP
@@ -130,7 +132,101 @@ Get-ADReplicationSubnet -Filter *
 #======1.8======
 #region Users en OU's toevoegen
 
+#test code
+
+#hoe parameter meegeven, ous.csv veranderen door $FileCSV
+#param([parameter(Mandatory=$true)] [String]$FileCSV)
+
+$listOU=Import-CSV ".\OUs.csv" -Delimiter ";"
+ForEach($OU in $listOU){
+
+try{
+$OUName = $OU.Name
+$OUDisplayName = $OU.DisplayName
+$OUDescription = $OU.Description
+$OUPath = $OU.Path
+
+Write-Host -ForegroundColor Yellow $OUName $OUPath
+
+New-ADOrganizationalUnit -Name $OUName -DisplayName $OUDisplayName -Description $OUDescription -Path $OUPath
+
+Write-Host -ForegroundColor Green "OU $OUName created"
+}catch{
+Write-Host $Error[0].Exception.Message}}
+#einde test code
+
 #Maak OU's met CSV bestand
+$OUNames = Import-Csv ".\OUs.csv" -Delimiter ";"
+ 
+Foreach ($OU in $OUNames)
+{ 
+	$Name = $OU.Name
+	$DisplayName = $OU.DisplayName
+	$Description = $OU.Description
+	$Path = $OU.Path
+
+	New-ADOrganizationalUnit -Name $Name -DisplayName $DisplayName  -Description $Description -Path $Path
+} 
+
+
+#Maak Users met CSV bestand
+$UserNames = Import-Csv "UserAccounts.csv" -Delimiter ";"
+
+Foreach ($User in $UserNames)
+{
+    $Name = $User.DisplayName
+    $SamAccountName = $User.SamAccountName
+    $DisplayName = $User.DisplayName
+	$GivenName = $User.DisplayName
+	$SurName = $User.SurName
+    $HomeDirectory = "\\"+$HomeServer+"\"+$HomeShare+"\"+$User.DisplayName
+    $ScriptPath = 'login.bat'
+	$Path = $User.DistinguishedName
+    $UPName = $User.UserPrincipalName
+    $AccountPassword = "P@ssw0rd"
+
+    $AccountPassword = ConvertTo-SecureString $AccountPassword -AsPlainText -force
+
+    New-ADUser -Name $Name -SamAccountName $SamAccountName -DisplayName $DisplayName -GivenName $GivenName -Surname $SurName -HomeDrive $HomeDrive -HomeDirectory $HomeDirectory -ScriptPath $ScriptPath -Path $Path -UserPrincipalName $UPName -AccountPassword $AccountPassword -Enabled:$true
+	New-Item -Path $HomeDirectory -type directory -Force
+	$acl = Get-Acl $HomeDirectory
+	$acl.SetAccessRuleProtection($False, $False)
+	$rule = New-Object System.Security.AccessControl.FileSystemAccessRule($User.SamAccountName,"Modify", "ContainerInherit, ObjectInherit", "None", "Allow")
+	$acl.AddAccessRule($rule)
+	Set-Acl $HomeDirectory $acl
+}
+
+#
+# making a share remotely
+# - name : homedirs
+# - share perms : everyone - full control
+# - NTFS perms : Administrators - full control and Authenticated Users - ReadAndExecute on this folder only 
+#
+
+$FileServer="MS.local"
+$Share="C$"
+$Drive="C:"
+$Dir="Homedir"
+$LocalPath=$Drive+"\"+$Dir
+$Path="\\"+$FileServer+"\"+$Share+"\"+$Dir
+
+New-Item -Path $Path -type directory -Force
+New-SmbShare -CimSession $FileServer -name $Dir -Path $LocalPath -FullAccess Everyone
+
+$acl = Get-Acl $Path
+$acl.SetAccessRuleProtection($True, $False)
+
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators","FullControl", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.AddAccessRule($rule)
+
+$rule = New-Object System.Security.AccessControl.FileSystemAccessRule("Authenticated Users","ReadAndExecute", "None", "NoPropagateInherit", "Allow")
+$acl.AddAccessRule($rule)
+
+Set-Acl $Path $acl
+
+$HomeServer=$FileServer
+$HomeShare=$Dir
+
 
 
 
