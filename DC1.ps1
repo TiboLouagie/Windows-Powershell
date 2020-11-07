@@ -13,8 +13,8 @@ Restart-Computer -Wait
 #Remove-NetIPAddress -InterfaceAlias "Ethernet0"
 #Remove-NetRoute -InterfaceAlias "Ethernet0"
 
-New-NetIPAddress -IPAddress 192.168.1.89 `-PrefixLength 24 `-DefaultGateway 192.168.1.1 `-InterfaceAlias Ethernet0Disable-NetAdapterBinding -Name "Ethernet0" -ComponentID ms_tcpip6
-Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddress "192.168.1.89"
+New-NetIPAddress -IPAddress 192.168.1.2 `-PrefixLength 24 `-DefaultGateway 192.168.1.1 `-InterfaceAlias Ethernet0Disable-NetAdapterBinding -Name "Ethernet0" -ComponentID ms_tcpip6
+Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddress "192.168.1.2"
 #endregion
 #======1.3======
 #region Install AD & DNS
@@ -237,13 +237,49 @@ $HomeShare=$Dir
 
 #sysprep
 Start-Process -FilePath C:\Windows\System32\Sysprep\Sysprep.exe -ArgumentList '/generalize /oobe /shutdown /quiet'
-#name
+#Name
 Rename-Computer -NewName MS
 Restart-computer -Force
 
-#toevoegen aan domein
+#Adding to domain
 Add-Computer -domainname intranet.mijnschool.be -Credential MIJNSCHOOL\Administrator -restart -Force
 
 #share staat puntje hierboven
 
+#endregion
+#======3======
+#region
+
+#DC2 configuration
+#Sysprep
+Start-Process -FilePath C:\Windows\System32\Sysprep\Sysprep.exe -ArgumentList '/generalize /oobe /shutdown /quiet'
+
+#Name
+Rename-Computer -NewName DC2
+Restart-computer -Force
+
+#Adding to domain
+Add-Computer -domainname intranet.mijnschool.be -Credential MIJNSCHOOL\Administrator -restart -Force
+
+#Set IP Address
+        New-netIPAddress -IPAddress 192.168.1.3 `
+        -PrefixLength 24 `      
+			#wordt soms niet goed gedaan
+        -DefaultGateway 192.168.1.1 `
+        -InterfaceAlias Ethernet0 
+		Disable-NetAdapterBinding -Name "Ethernet0" -ComponentID ms_tcpip6
+		Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddress "192.168.1.2"
+
+#Configure as secondary DC
+Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
+Install-ADDSDomainController -DomainName "intranet.mijnschool.be" -credential $(get-credential)
+Set-ADObject "CN=NTDS Settings,CN=DC2,CN=Servers,CN=Kortrijk,CN=Sites,CN=Configuration,DC=mijnschool,DC=local" -Replace@{options='1'}
+Set-ADObject -Identity (Get-ADDomainController DC2).ntdssettingsobjectdn -Replace @{options='1'}
+
+#Configure DHCP + replication
+Install-WindowsFeature -ComputerName DC2 -name DHCP -IncludeManagementTools
+    #On DC1
+    Add-DhcpServerInDC -DnsName "DC2.intranet.mijnschool.be" -IPAddress 192.168.1.3
+    #Can't be done remotely
+    Add-DhcpServerv4Failover -Name "Example_Failover" -ScopeId 192.168.1.0 -PartnerServer DC2 -ComputerName DC1 -LoadBalancePercent 50 -SharedSecret "P@ssw0rd"
 #endregion
