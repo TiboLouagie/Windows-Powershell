@@ -173,6 +173,9 @@ Foreach ($OU in $OUNames)
 #Maak Users met CSV bestand
 $UserNames = Import-Csv "UserAccounts.csv" -Delimiter ";"
 
+$HomeServer="MS.local"
+$HomeShare="Homedir"
+
 Foreach ($User in $UserNames)
 {
     $Name = $User.DisplayName
@@ -229,7 +232,32 @@ $HomeServer=$FileServer
 $HomeShare=$Dir
 
 
+#Maak Groups met CSV bestand
+$GroupNames = Import-Csv ".\Groups.csv" -Delimiter ";"
 
+Foreach ($Group in $GroupNames)
+{ 
+	$Name = $Group.Name
+	$DisplayName = $Group.DisplayName
+	$Path = $Group.Path
+	$GroupCategory = $Group.GroupCategory
+	$GroupScope = $Group.GroupScope
+
+
+	New-ADGroup -Name $Name -SamAccountName $Name -GroupCategory $GroupCategory -GroupScope $GroupScope -DisplayName $DisplayName -Path $Path
+}
+
+
+#Stop Users in Groups
+$Members = Import-Csv ".\GroupMembers.csv" -Delimiter ";"
+ 
+Foreach ($Member in $Members)
+{ 
+	$Identity = $Member.Identity
+	$Members = $Member.Member
+
+	Add-ADGroupMember -Identity $Identity -Members $Members
+}
 
 #endregion
 #======2.1 2======
