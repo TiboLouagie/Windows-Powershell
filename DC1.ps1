@@ -129,8 +129,8 @@ Get-ADReplicationSubnet -Filter *
 
 
 #endregion
-#======1.8======
-#region Users en OU's toevoegen
+#======1.8 9 10 11======
+#region Adding Users en OU's
 
 #test code
 
@@ -138,7 +138,8 @@ Get-ADReplicationSubnet -Filter *
 #param([parameter(Mandatory=$true)] [String]$FileCSV)
 
 $listOU=Import-CSV ".\OUs.csv" -Delimiter ";"
-ForEach($OU in $listOU){
+ForEach($OU in $listOU)
+{
 
 try{
 $OUName = $OU.Name
@@ -229,5 +230,20 @@ $HomeShare=$Dir
 
 
 
+
+#endregion
+#======2.1 2======
+#region MS configuration
+
+#sysprep
+Start-Process -FilePath C:\Windows\System32\Sysprep\Sysprep.exe -ArgumentList '/generalize /oobe /shutdown /quiet'
+#name
+Rename-Computer -NewName MS
+Restart-computer -Force
+
+#toevoegen aan domein
+Add-Computer -domainname intranet.mijnschool.be -Credential MIJNSCHOOL\Administrator -restart -Force
+
+#share staat puntje hierboven
 
 #endregion
