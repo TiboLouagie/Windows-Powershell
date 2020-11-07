@@ -244,6 +244,15 @@ Restart-computer -Force
 #Adding to domain
 Add-Computer -domainname intranet.mijnschool.be -Credential MIJNSCHOOL\Administrator -restart -Force
 
+#statisch ip
+New-netIPAddress -IPAddress 192.168.1.4 `
+        -PrefixLength 24 `                    
+        -DefaultGateway 192.168.1.1 `
+        -InterfaceAlias Ethernet0 
+		Disable-NetAdapterBinding -Name "Ethernet0" -ComponentID ms_tcpip6
+		Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddress "192.168.1.2"
+
+
 #share staat puntje hierboven
 
 #endregion
