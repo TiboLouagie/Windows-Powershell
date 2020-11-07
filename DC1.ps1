@@ -108,7 +108,7 @@ Install-WindowsFeature -computerName DC1 -name DHCP -IncludeManagementTools
 		set-DhcpServerv4OptionValue `
             -ScopeId 192.168.1.0 `
             -ComputerName DC1.intranet.mijnschool.be `
-            -DnsDomain mijnschool.local `
+            -DnsDomain intranet.mijnschool.be `
             -router 192.168.1.1 `
             -DnsServer 192.168.1.2
 
@@ -248,7 +248,7 @@ Add-Computer -domainname intranet.mijnschool.be -Credential MIJNSCHOOL\Administr
 
 #endregion
 #======3======
-#region
+#region DC2 configuration
 
 #DC2 configuration
 #Sysprep
