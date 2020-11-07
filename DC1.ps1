@@ -283,3 +283,6 @@ Install-WindowsFeature -ComputerName DC2 -name DHCP -IncludeManagementTools
     #Can't be done remotely
     Add-DhcpServerv4Failover -Name "Example_Failover" -ScopeId 192.168.1.0 -PartnerServer DC2 -ComputerName DC1 -LoadBalancePercent 50 -SharedSecret "P@ssw0rd"
 #endregion
+
+#github link
+#https://github.com/TiboLouagie/Windows-Powershell
