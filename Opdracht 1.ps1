@@ -86,7 +86,7 @@ $_ | Set-ADUser -UserPrincipalName $newUpn2
 
 #endregion
 #======1.7======
-#region Install DHCP
+#region - Install DHCP
 
 
 #Install DHCP
@@ -130,7 +130,7 @@ Get-ADReplicationSubnet -Filter *
 
 #endregion
 #======1.8 9 10 11======
-#region Adding Users en OU's
+#region - Adding Users en OU's
 
 #test code
 
@@ -233,7 +233,7 @@ $HomeShare=$Dir
 
 #endregion
 #======2.1 2======
-#region MS configuration
+#region - MS configuration
 
 #sysprep
 Start-Process -FilePath C:\Windows\System32\Sysprep\Sysprep.exe -ArgumentList '/generalize /oobe /shutdown /quiet'
@@ -257,7 +257,7 @@ New-netIPAddress -IPAddress 192.168.1.4 `
 
 #endregion
 #======3======
-#region DC2 configuration
+#region - DC2 configuration
 
 #DC2 configuration
 #Sysprep
@@ -293,5 +293,5 @@ Install-WindowsFeature -ComputerName DC2 -name DHCP -IncludeManagementTools
     Add-DhcpServerv4Failover -Name "Example_Failover" -ScopeId 192.168.1.0 -PartnerServer DC2 -ComputerName DC1 -LoadBalancePercent 50 -SharedSecret "P@ssw0rd"
 #endregion
 
-#github link
+#github link 
 #https://github.com/TiboLouagie/Windows-Powershell
